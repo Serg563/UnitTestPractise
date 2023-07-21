@@ -8,6 +8,8 @@ namespace OrderApi.Repositories
         Task<IEnumerable<Order>> GetAllOrders();
         void AddOrder(AddOrderDTO order);
 
+        void UpdateOrder(Order order);
+
         Task<int> DeleteOrder(int id);
 
         Task<Order> GetOrderById(int id);

@@ -50,5 +50,11 @@ namespace OrderApi.Repositories
         {
             return await context.Orders.ToListAsync();
         }
+
+        public void UpdateOrder(Order order)
+        {
+             context.Update(order);
+             context.SaveChanges();
+        }
     }
 }

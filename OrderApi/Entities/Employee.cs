@@ -7,7 +7,7 @@ namespace OrderApi.Entities
     {
         [Key]
         [Column("EmployeeID")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
 
         public string? FirstName { get; init; } = default!;
 

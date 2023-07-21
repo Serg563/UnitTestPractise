@@ -5,7 +5,7 @@ namespace OrderApi.Entities
     public class Shipper
     {
         [Column("ShipperID")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
 
         public string? CompanyName { get; init; } = default!;
 

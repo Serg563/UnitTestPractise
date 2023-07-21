@@ -7,7 +7,7 @@ namespace OrderApi.Entities
     {
         [Key]
         [Column("ProductID")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
 
         public string? ProductName { get; init; } = default!;
 

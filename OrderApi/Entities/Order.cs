@@ -8,7 +8,7 @@ namespace OrderApi.Entities
     {
         [Key]
         [Column("OrderID")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
 
         public int CustomerID { get; set; }
 
