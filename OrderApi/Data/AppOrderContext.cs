@@ -13,7 +13,7 @@ namespace OrderApi.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Order>().HasOne(x => x.Customer).WithMany(x => x.Orders);
+            //modelBuilder.Entity<Order>().HasOne(x => x.Customer).WithMany(x => x.Orders);
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.OrderDetails)
                 .WithOne(od => od.Order)

@@ -55,5 +55,12 @@ namespace OrderApiTests
                 new Product { Id = 2, ProductName = "Product 2", SupplierID = 2, CategoryId = 2 });
             context.SaveChanges();
         }
+        public static IMapper CreateMapperProfile()
+        {
+            var myProfile = new AutoMapperProfiler();
+            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(myProfile));
+
+            return new Mapper(configuration);
+        }
     }
 }

@@ -18,6 +18,6 @@ namespace OrderApi.Entities
         [Column("ContactTitle")]
         public string? ContactTitle { get; init; } = default!;
 
-        public List<Order>? Orders { get; init; }
+        //public List<Order>? Orders { get; init; }
     }
 }

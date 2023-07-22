@@ -48,7 +48,7 @@ namespace OrderApi.Repositories
 
         public async Task<IEnumerable<Order>> GetAllOrders()
         {
-            return await context.Orders.ToListAsync();
+            return await context.Orders.Include(x => x.Customer).Include(x => x.Employee).ToListAsync();
         }
 
         public void UpdateOrder(Order order)
