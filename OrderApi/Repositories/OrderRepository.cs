@@ -17,15 +17,15 @@ namespace OrderApi.Repositories
             this.mapper = mapper;
         }
 
-        public void AddOrder(AddOrderDTO order)
+        public async Task AddOrder(AddOrderDTO order)
         {
             if (order != null)
             {
                 var mapped = mapper.Map<Order>(order);
                 mapped.OrderDate = DateTime.Now;
                 mapped.RequiredDate = DateTime.Now.AddDays(1);
-                context.AddAsync(mapped);
-                context.SaveChangesAsync();
+                await context.AddAsync(mapped);
+                await context.SaveChangesAsync();
             }
         }
 

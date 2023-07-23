@@ -6,7 +6,7 @@ namespace OrderApi.Repositories
     public interface IOrderRepository
     {
         Task<IEnumerable<Order>> GetAllOrders();
-        void AddOrder(AddOrderDTO order);
+        Task AddOrder(AddOrderDTO order);
 
         void UpdateOrder(Order order);
 

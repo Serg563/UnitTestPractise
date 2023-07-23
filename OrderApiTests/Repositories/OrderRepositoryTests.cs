@@ -96,7 +96,7 @@ namespace OrderApi.Repositories.Tests
            new[]
            {
                 new Order { Id = 1, CustomerID = 1, EmployeeID = 1, OrderDate = new DateTime(2023, 01, 10), RequiredDate = new DateTime(2023, 01, 20), ShippedDate = new DateTime(2023, 01, 15), ShipVia = 1, Freight = 12.5, ShipName = "Order 1" },
-                new Order { Id = 2, CustomerID = 2, EmployeeID = 2, OrderDate = new DateTime(2023, 02, 12), RequiredDate = new DateTime(2023, 02, 25), ShippedDate = new DateTime(2023, 02, 20), ShipVia = 2, Freight = 8.75, ShipName = "Order 2" },
+                new Order { Id = 2, CustomerID = 2, EmployeeID = 2, OrderDate = new DateTime(2023, 04, 15), RequiredDate = new DateTime(2023, 02, 25), ShippedDate = new DateTime(2023, 02, 20), ShipVia = 2, Freight = 8.75, ShipName = "Order 2" },
            };
     }
 }

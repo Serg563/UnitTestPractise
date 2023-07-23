@@ -26,7 +26,7 @@ namespace OrderApiTests
 
             return options;
         }
-        private static void SeedData(AppOrderContext context)
+        public static void SeedData(AppOrderContext context)
         {
             context.Categories.AddRange(
                 new Category { CategoryID = 1, CategoryName = "Category 1", Description = "Description for Category 1" },
@@ -35,11 +35,11 @@ namespace OrderApiTests
                 new Customer { Id = 1, CompanyName = "Company A", ContactName = "John Doe", ContactTitle = "Manager" },
                 new Customer { Id = 2, CompanyName = "Company B", ContactName = "Jane Smith", ContactTitle = "CEO" });
             context.Employees.AddRange(
-                new Employee { Id = 1, FirstName = "Luke", LastName = "Skywalker", BirthDate = new DateTime(1990, 5, 4), Title = "Jedi", Country = "Tatooine", City = "Mos Eisley" },
-                new Employee { Id = 2, FirstName = "Leia", LastName = "Organa", BirthDate = new DateTime(1992, 7, 12), Title = "Princess", Country = "Alderaan", City = "Aldera" });
+                new Employee { Id = 1, FirstName = "sergii", LastName = "niverchuk", BirthDate = new DateTime(1990, 5, 4), Title = "Jedi", Country = "Tatooine", City = "Mos Eisley" },
+                new Employee { Id = 2, FirstName = "illya", LastName = "zarech", BirthDate = new DateTime(1992, 7, 12), Title = "Princess", Country = "Alderaan", City = "Aldera" });
             context.Orders.AddRange(
                 new Order { Id = 1, CustomerID = 1, EmployeeID = 1, OrderDate = new DateTime(2023, 01, 10), RequiredDate = new DateTime(2023, 01, 20), ShippedDate = new DateTime(2023, 01, 15), ShipVia = 1, Freight = 12.5, ShipName = "Order 1" },
-                new Order { Id = 2, CustomerID = 2, EmployeeID = 2, OrderDate = new DateTime(2023, 02, 12), RequiredDate = new DateTime(2023, 02, 25), ShippedDate = new DateTime(2023, 02, 20), ShipVia = 2, Freight = 8.75, ShipName = "Order 2" });
+                new Order { Id = 2, CustomerID = 2, EmployeeID = 2, OrderDate = new DateTime(2023, 04, 15), RequiredDate = new DateTime(2023, 02, 25), ShippedDate = new DateTime(2023, 02, 20), ShipVia = 2, Freight = 8.75, ShipName = "Order 2" });
             context.OrderDetails.AddRange(
                 new OrderDetail { OrderDetailsID = 1, OrderID = 1, ProductID = 1, UnitPrice = 25.5, Quantity = 5, Discount = 0.1 },
                 new OrderDetail { OrderDetailsID = 2, OrderID = 1, ProductID = 2, UnitPrice = 15.0, Quantity = 2, Discount = 0.05 },

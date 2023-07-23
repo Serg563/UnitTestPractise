@@ -40,7 +40,7 @@ namespace OrderApi.Controllers
         [HttpPost("AddOrder")]
         public async Task<IActionResult> AddOrder([FromBody]AddOrderDTO order)
         {
-            repo.AddOrder(order);
+            await repo.AddOrder(order);
             return Ok();
         }
     }

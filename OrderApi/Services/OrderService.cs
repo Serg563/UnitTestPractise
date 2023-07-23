@@ -27,7 +27,6 @@ namespace OrderApi.Services
         public async Task<Order> GetOrderById(int id)
         {
             var res = await unitOfWork.OrderRepository.GetOrderById(id);
-            await unitOfWork.SaveAsync();
             return res;
         }
 
@@ -49,7 +48,7 @@ namespace OrderApi.Services
 
         public async Task AddOrder(AddOrderDTO order)
         {
-            unitOfWork.OrderRepository.AddOrder(order);
+            await unitOfWork.OrderRepository.AddOrder(order);
             await unitOfWork.SaveAsync();
         }
     }
