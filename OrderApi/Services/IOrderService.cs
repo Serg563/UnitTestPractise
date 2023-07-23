@@ -1,4 +1,5 @@
-﻿using OrderApi.Entities;
+﻿using OrderApi.DTO;
+using OrderApi.Entities;
 using OrderApi.Models;
 
 namespace OrderApi.Services
@@ -9,6 +10,11 @@ namespace OrderApi.Services
 
         Task<Order> GetOrderById(int id);
 
-        
+        Task AddOrder(AddOrderDTO order);
+
+        Task DeleteOrder(int id);
+
+        Task UpdateOrder(Order order);
+
     }
 }

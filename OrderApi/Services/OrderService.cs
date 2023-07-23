@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using OrderApi.Data;
 using OrderApi.DTO;
 using OrderApi.Entities;
@@ -32,6 +33,11 @@ namespace OrderApi.Services
 
         public async Task DeleteOrder(int id)
         {
+            var order = unitOfWork.OrderRepository.GetOrderById(id);
+            if(order is null)
+            {
+                throw new IndexOutOfRangeException(nameof(order));
+            }
             await unitOfWork.OrderRepository.DeleteOrder(id);
             await unitOfWork.SaveAsync();
         }

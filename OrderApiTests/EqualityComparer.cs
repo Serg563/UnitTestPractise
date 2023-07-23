@@ -1,4 +1,5 @@
 ﻿using OrderApi.Entities;
+using OrderApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -29,6 +30,25 @@ namespace OrderApiTests
         }
 
         public int GetHashCode([DisallowNull] Order obj)
+        {
+            return obj.GetHashCode();
+        }
+    }
+    internal class OrderGetAllModelEqualityComparer : IEqualityComparer<OrderGetAllModel>
+    {
+        public bool Equals([AllowNull] OrderGetAllModel x, [AllowNull] OrderGetAllModel y)
+        {
+            if (x == null && y == null)
+                return true;
+            if (x == null || y == null)
+                return false;
+
+            return x.OrderId == y.OrderId
+                && x.EmployeeFullName == y.EmployeeFullName
+                && x.OrderDate == y.OrderDate;
+        }
+
+        public int GetHashCode([DisallowNull] OrderGetAllModel obj)
         {
             return obj.GetHashCode();
         }
