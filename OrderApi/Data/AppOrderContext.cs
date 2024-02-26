@@ -19,6 +19,7 @@ namespace OrderApi.Data
                 .WithOne(od => od.Order)
                 .HasForeignKey(od => od.OrderID);
         }
+        public DbSet<DevTask> DevTasks { get; set; }
 
         public DbSet<Category> Categories { get; set; }
 

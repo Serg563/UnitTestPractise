@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Metanit.com</title>
+</head>
+<body>
+    <div id="chatroom"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script>
+        let index = 0;
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/protected", { accessTokenFactory: () => "user_id_in_the_token_" + index++ })
+            .build();
+
+        hubConnection.on("Receive", function (message) {
+            let messageElement = document.createElement("p");
+            messageElement.textContent = message;
+            document.getElementById("chatroom").appendChild(messageElement);
+            console.log(message);
+        });
+        const startConnection = () => hubConnection.start()
+            .then(function () {
+                // Start retrieving data periodically
+                /*setInterval(retrieveData, 5000);*/
+                retrieveData();
+            })
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+        const pingSelf = () => hubConnection.send("SelfPing")
+        const JustAFunction = () => hubConnection.send("JustAFunction")
+        const Call = () => hubConnection.send("Call")
+
+        function retrieveData() {
+            hubConnection.invoke("Send", "Requesting data from server")
+                .then(x => console.log(x +"retrieved data"))
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+        }
+
+        const _testToken = (token) => (token ? fetch('/token?access_token=' + token) : fetch('/token'))
+            .then(r => r.text()).then(t => console.log(t))
+        const _testCookie = () => fetch('/cookie').then(r => r.text()).then(t => console.log(t))
+        const _getCookie = () => fetch('/get-cookie')
+        const _token = () => hubConnection.invoke('TokenProtected').then(r => console.log(r))
+        const _cookie = () => hubConnection.invoke('CookieProtected').then(r => console.log(r))
+        //function JustAFunction() {
+        //    hubConnection.invoke("JustAFunction")
+        //        .then(x => console.log(x + "retrieved data"))
+        //        .catch(function (err) {
+        //            return console.error(err.toString());
+        //        });
+        //}
+    </script>
+</body>
+</html>

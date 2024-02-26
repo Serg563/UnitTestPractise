@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+<script src="signalr.js"></script>
+    <script>
+
+        var connection = null
+
+        const connect = async (user) => {
+            if (connection != null && connection.state === 'Connected') {
+                await connection.stop()
+                connection = null;
+            }
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub?user=" + user)
+                .build();  
+
+            connection.on('addChatMessage', (m) => console.log('notification', m))
+
+            return connection.start()
+        }
+        const _getCookie = (userName) => fetch(`/get-cookie?userName=${userName}`)
+        const notify = (user, msg) => fetch(`/notify?user=${user}&message=${encodeURIComponent(msg)}`)
+        const test = () => connection.send("AddUserToGroup");
+        const getusers = () => connection.invoke("GetAllUsers").then(r => console.log(r));
+        const sendMessage = (message) => connection.send("SendChatMessage", message );
+    </script>
+</body>
