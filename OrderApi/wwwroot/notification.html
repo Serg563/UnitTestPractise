@@ -20,7 +20,7 @@
                 .withUrl("/notificationHub?user=" + user)
                 .build();  
 
-            connection.on('addChatMessage', (m) => console.log('notification', m))
+            connection.on('addNotification', (m) => console.log('notification', m))
 
             return connection.start()
         }
@@ -28,6 +28,7 @@
         const notify = (user, msg) => fetch(`/notify?user=${user}&message=${encodeURIComponent(msg)}`)
         const test = () => connection.send("AddUserToGroup");
         const getusers = () => connection.invoke("GetAllUsers").then(r => console.log(r));
-        const sendMessage = (message) => connection.send("SendChatMessage", message );
+        const sendMessage = (message) => connection.send("SendChatMessage", message);
+        const removeMessage = (messageKey) => connection.send("RemoveMessage", messageKey);
     </script>
 </body>

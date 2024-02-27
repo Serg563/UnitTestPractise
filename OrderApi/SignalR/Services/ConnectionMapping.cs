@@ -128,7 +128,7 @@ namespace OrderApi.SignalR.Services
             );
         }
 
-        public async Task<IEnumerable<string>> GetAllUsers()
+        public async Task<IEnumerable<string>> GetAllConnectionUsersAsync()
         {
             //return _connections.Keys;
             return await _dbContext.Connections.Select(x => x.UserId).ToListAsync();
