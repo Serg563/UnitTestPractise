@@ -12,12 +12,12 @@ namespace OrderApi.SignalR
         {
             this._notificationRegistry = registry;
             this._connections = connections;
-            Console.WriteLine(Guid.NewGuid().ToString());
         }
 
         public override async Task OnConnectedAsync()
         {
             string userId = Context.UserIdentifier;
+            Console.WriteLine("UserIdentifier - "+Context.UserIdentifier);
             await _connections.Add(userId, Context.ConnectionId);
             var messages = await _notificationRegistry.GetMessagesRefactored(userId);
             foreach (var msg in messages)
@@ -25,6 +25,7 @@ namespace OrderApi.SignalR
                 await Clients.User(userId).SendAsync("addNotification", msg);
             }
         }
+       
         public async Task SendChatMessage(string message)
         {
             foreach (var userId in await _notificationRegistry.GetUsers())
@@ -32,7 +33,7 @@ namespace OrderApi.SignalR
                 if (userId != Context.UserIdentifier)
                 {
                     var generatedKey = await _notificationRegistry.AddMessage(userId,message);
-                    var newMessage = new Messages() {Key = generatedKey, UserId = userId, Message = message };
+                    var newMessage = new Messages() {Key = generatedKey, UserId = userId, Message = message,Time = DateTime.Now};
                     await Clients.User(userId).SendAsync("addNotification", newMessage);
                 }
             }
@@ -54,6 +55,7 @@ namespace OrderApi.SignalR
         {
             return await _notificationRegistry.GetUsers();
         }
+    
         public async Task AddUserToGroup()
         {
             Console.WriteLine(Context.UserIdentifier);

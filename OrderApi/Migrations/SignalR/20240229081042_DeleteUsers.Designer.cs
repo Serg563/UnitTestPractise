@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrderApi.SignalR.Services.Data;
 
@@ -11,9 +12,11 @@ using OrderApi.SignalR.Services.Data;
 namespace OrderApi.Migrations.SignalR
 {
     [DbContext(typeof(SignalRContext))]
-    partial class SignalRContextModelSnapshot : ModelSnapshot
+    [Migration("20240229081042_DeleteUsers")]
+    partial class DeleteUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,11 +297,21 @@ namespace OrderApi.Migrations.SignalR
                         {
                             Id = 1,
                             Date = new DateTime(2024, 2, 29, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FullTime = new DateTime(2024, 2, 29, 10, 18, 19, 590, DateTimeKind.Local).AddTicks(3945),
+                            FullTime = new DateTime(2024, 2, 29, 10, 10, 41, 972, DateTimeKind.Local).AddTicks(5403),
                             Span = new TimeSpan(0, 2, 0, 0, 0),
                             Time = new TimeSpan(0, 10, 30, 0, 0),
-                            TimeOffSet = new DateTimeOffset(new DateTime(2024, 2, 29, 10, 18, 19, 590, DateTimeKind.Unspecified).AddTicks(4046), new TimeSpan(0, 2, 0, 0, 0))
+                            TimeOffSet = new DateTimeOffset(new DateTime(2024, 2, 29, 10, 10, 41, 972, DateTimeKind.Unspecified).AddTicks(5505), new TimeSpan(0, 2, 0, 0, 0))
                         });
+                });
+
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Users", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -354,8 +367,8 @@ namespace OrderApi.Migrations.SignalR
 
             modelBuilder.Entity("OrderApi.SignalR.Services.Data.Connections", b =>
                 {
-                    b.HasOne("OrderApi.Controllers.ApplicationUser", "User")
-                        .WithMany()
+                    b.HasOne("OrderApi.SignalR.Services.Data.Users", "User")
+                        .WithMany("Connections")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -365,13 +378,20 @@ namespace OrderApi.Migrations.SignalR
 
             modelBuilder.Entity("OrderApi.SignalR.Services.Data.Messages", b =>
                 {
-                    b.HasOne("OrderApi.Controllers.ApplicationUser", "User")
-                        .WithMany()
+                    b.HasOne("OrderApi.SignalR.Services.Data.Users", "User")
+                        .WithMany("Messages")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Users", b =>
+                {
+                    b.Navigation("Connections");
+
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

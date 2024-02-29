@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using OrderApi.Controllers;
 using OrderApi.SignalR.Services.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -22,7 +23,7 @@ namespace OrderApi.SignalR.Services
             //_usersMessages[userId].Add(message);
             int generatedKey = 0; 
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            var user = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == userId);
             if (user != null)
             {
                 //if (user.Messages == null)
@@ -30,15 +31,15 @@ namespace OrderApi.SignalR.Services
                 //    user.Messages = new List<Messages>();
                 //}
                 //user.Messages.Add(new Messages {UserId = userId,Message = message });
-                var newMessage = new Messages() { UserId = userId, Message = message };
+                var newMessage = new Messages() { UserId = userId, Message = message,Time = DateTime.Now};
                 await _dbContext.Messages.AddAsync(newMessage);
                 await _dbContext.SaveChangesAsync();
                 generatedKey = newMessage.Key;
             }
             else
             {
-                await _dbContext.Users.AddAsync(new Users(){UserId = userId});
-                var newMessage = new Messages() { UserId = userId, Message = message };
+                await _dbContext.ApplicationUsers.AddAsync(new ApplicationUser() { Id = userId });
+                var newMessage = new Messages() { UserId = userId, Message = message , Time = DateTime.Now };
                 await _dbContext.Messages.AddAsync(newMessage);
                 await _dbContext.SaveChangesAsync();
                 generatedKey = newMessage.Key;
@@ -76,7 +77,7 @@ namespace OrderApi.SignalR.Services
         }
         public async Task<List<string>> GetUsers()
         {
-            return await _dbContext.Users.Select(u => u.UserId).ToListAsync();
+            return await _dbContext.ApplicationUsers.Select(u => u.Id).ToListAsync();
         }
     }
 }

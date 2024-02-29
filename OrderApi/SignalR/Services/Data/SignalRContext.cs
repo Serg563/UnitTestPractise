@@ -2,12 +2,15 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using OrderApi.Controllers;
 
 namespace OrderApi.SignalR.Services.Data
 {
-    public partial class SignalRContext : DbContext
+    public partial class SignalRContext : IdentityDbContext<ApplicationUser>
     {
         public SignalRContext()
         {
@@ -19,16 +22,50 @@ namespace OrderApi.SignalR.Services.Data
         }
 
         public virtual DbSet<Connections> Connections { get; set; }
-        public virtual DbSet<Users> Users { get; set; }
         public virtual DbSet<Messages> Messages { get; set; }
-
+        public virtual DbSet<TestTimeEntity> TestTimeEntities { get; set; }
+        public virtual DbSet<ApplicationUser> ApplicationUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Connections>(entity =>
             {
                 entity.HasKey(e => new { e.UserId, e.ConnectionId });
-            });
+            })
+            .Entity<TestTimeEntity>().HasData(
+                new TestTimeEntity
+                {
+                    Id = 1,
+                    FullTime = DateTime.Now,
+                    Time = new TimeOnly(10, 30, 0),
+                    Date = new DateOnly(2024, 2, 29),
+                    Span = TimeSpan.FromHours(2),
+                    TimeOffSet = DateTimeOffset.Now
+                });
+
+        }
+        protected override void ConfigureConventions(ModelConfigurationBuilder builder)
+        {
+            base.ConfigureConventions(builder);
+            builder.Properties<DateOnly>()
+                .HaveConversion<DateOnlyConverter>();
+            builder.Properties<TimeOnly>()
+                .HaveConversion<TimeOnlyConverter>();
         }
 
+    }
+    public class DateOnlyConverter : ValueConverter<DateOnly, DateTime>
+    {
+        public DateOnlyConverter() : base(
+            dateOnly => dateOnly.ToDateTime(TimeOnly.MinValue),
+            dateTime => DateOnly.FromDateTime(dateTime))
+        { }
+    }
+    public class TimeOnlyConverter : ValueConverter<TimeOnly, TimeSpan>
+    {
+        public TimeOnlyConverter() : base(
+            timeOnly => timeOnly.ToTimeSpan(),
+            timeSpan => TimeOnly.FromTimeSpan(timeSpan))
+        { }
     }
 }

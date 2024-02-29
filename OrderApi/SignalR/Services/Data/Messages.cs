@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OrderApi.Controllers;
 
 namespace OrderApi.SignalR.Services.Data
 {
@@ -7,8 +8,10 @@ namespace OrderApi.SignalR.Services.Data
         [Key]
         public int Key { get; set; }
         public string UserId { get; set; }
-        public Users User { get; set; }
+        public ApplicationUser User { get; set; }
 
         public string Message { get; set; }
+
+        public DateTime? Time { get; set; }
     }
 }

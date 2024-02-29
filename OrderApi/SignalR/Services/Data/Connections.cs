@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using OrderApi.Controllers;
 
 namespace OrderApi.SignalR.Services.Data
 {
@@ -10,6 +11,6 @@ namespace OrderApi.SignalR.Services.Data
         public string UserId { get; set; }
         public string ConnectionId { get; set; }
 
-        public virtual Users User { get; set; }
+        public virtual ApplicationUser User { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using OrderApi.Controllers;
 using OrderApi.SignalR.Services.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -41,6 +42,11 @@ namespace OrderApi.SignalR.Services
             //        connections.Add(connectionId);
             //    }
             //}
+            var user = await _dbContext.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == key);
+            if (user == null)
+            {
+                await _dbContext.ApplicationUsers.AddAsync(new ApplicationUser(){Id = key});
+            }
             Connections newConn = new Connections { ConnectionId = connectionId, UserId = key };
             await _dbContext.Connections.AddAsync(newConn);
             await _dbContext.SaveChangesAsync();
@@ -59,20 +65,20 @@ namespace OrderApi.SignalR.Services
             //}
         }
 
-        public async Task<IEnumerable<string>> GetConnections(string key)
-        {
-            //HashSet<string> connections;
-            //if (_connections.TryGetValue(key, out connections))
-            //{
-            //    return connections;
-            //}
+        //public async Task<IEnumerable<string>> GetConnections(string key)
+        //{
+        //    //HashSet<string> connections;
+        //    //if (_connections.TryGetValue(key, out connections))
+        //    //{
+        //    //    return connections;
+        //    //}
 
-            //return Enumerable.Empty<string>();
-            var connection = await _dbContext.Connections
-                .Include(c => c.User)
-                .FirstOrDefaultAsync(c => c.UserId == key);
-            return connection?.User?.Connections.Select(x => x.ConnectionId) ?? Enumerable.Empty<string>();
-        }
+        //    //return Enumerable.Empty<string>();
+        //    var connection = await _dbContext.Connections
+        //        .Include(c => c.User)
+        //        .FirstOrDefaultAsync(c => c.UserId == key);
+        //    return connection?.User?.Connections.Select(x => x.ConnectionId) ?? Enumerable.Empty<string>();
+        //}
 
         public async Task Remove(string key, string connectionId)
         {

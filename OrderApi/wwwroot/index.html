@@ -10,7 +10,7 @@
     <script>
         let index = 0;
         const hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl("/protected", { accessTokenFactory: () => "user_id_in_the_token_" + index++ })
+            .withUrl("/protected") //{ accessTokenFactory: () => "user_id_in_the_token_" + index++ })
             .build();
 
         hubConnection.on("Receive", function (message) {
@@ -19,15 +19,24 @@
             document.getElementById("chatroom").appendChild(messageElement);
             console.log(message);
         });
-        const startConnection = () => hubConnection.start()
-            .then(function () {
-                // Start retrieving data periodically
-                /*setInterval(retrieveData, 5000);*/
-                retrieveData();
-            })
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
+        const startConnection = () => {
+            hubConnection.start()
+                .then(function () {
+                    console.log("Connection started successfully.");
+                    // Perform any additional actions after the connection is established
+                })
+                .catch(function (err) {
+                    console.error("Error starting connection:", err);
+                });
+        }
+            //.then(function () {
+            //    // Start retrieving data periodically
+            //    /*setInterval(retrieveData, 5000);*/
+            //    retrieveData();
+            //})
+            //.catch(function (err) {
+            //    return console.error(err.toString());
+            //});
         const pingSelf = () => hubConnection.send("SelfPing")
         const JustAFunction = () => hubConnection.send("JustAFunction")
         const Call = () => hubConnection.send("Call")
@@ -46,6 +55,8 @@
         const _getCookie = () => fetch('/get-cookie')
         const _token = () => hubConnection.invoke('TokenProtected').then(r => console.log(r))
         const _cookie = () => hubConnection.invoke('CookieProtected').then(r => console.log(r))
+        const getguid = () => hubConnection.invoke("GetGuid").then(x => console.log(x));
+        const getusers = () => hubConnection.invoke("GetAllUsers").then(x => console.log(x));
         //function JustAFunction() {
         //    hubConnection.invoke("JustAFunction")
         //        .then(x => console.log(x + "retrieved data"))

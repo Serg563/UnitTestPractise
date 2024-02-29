@@ -10,8 +10,12 @@ using OrderApi.Services;
 using OrderApi.SignalR;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.DataProtection;
 using OrderApi.SignalR.Services;
 using OrderApi.SignalR.Services.Data;
+using Microsoft.AspNetCore.Identity;
+using OrderApi.Controllers;
+using Microsoft.OpenApi.Models;
 
 public class Program
 {
@@ -21,6 +25,16 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddSwaggerGen(c =>
+        {
+            // Other Swagger configuration...
+
+            c.MapType<TimeSpan>(() => new OpenApiSchema
+            {
+                Type = "string",
+                Format = "Duration"
+            });
+        });
         // Add services to the container.
         builder.Services.AddAuthentication("Cookie")
              .AddCookie("Cookie")
@@ -57,19 +71,20 @@ public class Program
                         return Task.CompletedTask;
                     },
                 };
-            }); 
-        //builder.Services.AddAuthorization(c =>
-        //{
-        //    c.AddPolicy("Cookie", pb => pb
-        //        .AddAuthenticationSchemes(CustomCookieScheme)
-        //        .RequireAuthenticatedUser());
+            });
+       
+        builder.Services.AddAuthorization(c =>
+        {
+            c.AddPolicy("Cookie", pb => pb
+                .AddAuthenticationSchemes("Cookie")
+                .RequireAuthenticatedUser());
 
-        //    c.AddPolicy("Token", pb => pb
-        //        // schema get's ignored in signalr
-        //        .AddAuthenticationSchemes(CustomTokenScheme)
-        //        .RequireClaim("token")
-        //        .RequireAuthenticatedUser());
-        //});
+            c.AddPolicy("Token", pb => pb
+                // schema get's ignored in signalr
+                .AddAuthenticationSchemes(CustomTokenScheme)
+                .RequireClaim("token")
+                .RequireAuthenticatedUser());
+        });
         builder.Services.AddControllers();
         builder.Services.AddDbContext<AppOrderContext>(options =>
         {
@@ -97,35 +112,59 @@ public class Program
         builder.Services.AddCors();
         builder.Services.AddSingleton<INotificationSink, NotificationService>();
         builder.Services.AddHostedService(sp => (NotificationService)sp.GetService<INotificationSink>());
-
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<SignalRContext>();
+        builder.Services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequireDigit = false;
+            options.Password.RequiredLength = 1;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+        });
+        builder.Services.AddScoped<ApiResponse>();
+      
 
         var app = builder.Build();
 
         app.UseCors(options => options
-            .WithOrigins("http://localhost:5173") // You can also specify a specific origin
+            .WithOrigins("http://localhost:3000") // You can also specify a specific origin
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
-       
-       
+
+
         // Configure the HTTP request pipeline.
-        //if (app.Environment.IsDevelopment())
-        //{
-        //    app.UseSwagger();
-        //    app.UseSwaggerUI();
-        //}
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
         app.UseDefaultFiles();
         app.UseStaticFiles();
 
         app.UseHttpsRedirection();
-
+        //app.Use((ctx, next) =>
+        //{
+        //    var idp = ctx.RequestServices.GetRequiredService<IDataProtectionProvider>();
+        //    var protector = idp.CreateProtector("auth-cookie");
+        //    var dataFromHeader =
+        //        ctx.Request.Headers.Cookie.FirstOrDefault(x => x.StartsWith(".AspNetCore.Cookie="));
+        //    Console.WriteLine("DataFromHeader_________________"+dataFromHeader);
+        //    var splitted = dataFromHeader?.Split("=").Last();
+        //    var claims = ctx.User.Claims;
+        //    var unprotected = splitted != null ? protector?.Unprotect(splitted) : null;
+        //    Console.WriteLine("___________________________User Claims:");
+        //    Console.WriteLine(unprotected);
+        //    return next();
+        //});
+       
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapHub<ChatHub>("/chat");
         app.MapHub<ProtectedHub>("/protected");
         app.MapHub<NotificationHub>("/notificationHub");
-       
+        
         app.Map("/token", ctx =>
         {
             ctx.Response.StatusCode = 200;
@@ -141,13 +180,29 @@ public class Program
             string userName = ctx.Request.Query["userName"];
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userName),
+                new Claim(ClaimTypes.NameIdentifier, "bob"),
+                new Claim("name", "bob"),
+                new Claim("hobbie", "football"),
             };
             var identity = new ClaimsIdentity(claims,"Cookie");
             var user = new ClaimsPrincipal(identity);
             await ctx.SignInAsync("Cookie", user);
 
         });
+        app.MapGet("/", ctx =>
+        {
+            var claims = ctx.User.Claims;
+
+            Console.WriteLine("User Claims: | " +
+                              ctx.User?.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value);
+            foreach (var claim in claims)
+            {
+                Console.WriteLine($"Type: {claim.Type}, Value: {claim.Value}");
+            }
+
+            return Task.FromResult(1);
+        });
+            //.RequireAuthorization("Cookie");
         //app.Map("/cookie", ctx =>
         //{
         //    ctx.Response.StatusCode = 200;
