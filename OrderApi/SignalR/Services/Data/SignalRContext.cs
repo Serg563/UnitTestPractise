@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OrderApi.Controllers;
+using OrderApi.SignalR.Services.Data.ChatEntities;
+using TaskManagerApi.Entities;
 
 namespace OrderApi.SignalR.Services.Data
 {
@@ -22,9 +24,12 @@ namespace OrderApi.SignalR.Services.Data
         }
 
         public virtual DbSet<Connections> Connections { get; set; }
-        public virtual DbSet<Messages> Messages { get; set; }
-        public virtual DbSet<TestTimeEntity> TestTimeEntities { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public virtual DbSet<UserDetails> UserDetails { get; set; }
+        public virtual DbSet<GroupMember> GroupMembers { get; set; }
+        public virtual DbSet<MessageGroup> MessageGroups { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

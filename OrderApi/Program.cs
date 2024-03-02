@@ -10,6 +10,7 @@ using OrderApi.Services;
 using OrderApi.SignalR;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.DataProtection;
 using OrderApi.SignalR.Services;
 using OrderApi.SignalR.Services.Data;
@@ -85,7 +86,9 @@ public class Program
                 .RequireClaim("token")
                 .RequireAuthenticatedUser());
         });
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(x =>
+            x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+        ;
         builder.Services.AddDbContext<AppOrderContext>(options =>
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
@@ -122,6 +125,7 @@ public class Program
             options.Password.RequireNonAlphanumeric = false;
         });
         builder.Services.AddScoped<ApiResponse>();
+        builder.Services.AddScoped<ChatService>();
       
 
         var app = builder.Build();

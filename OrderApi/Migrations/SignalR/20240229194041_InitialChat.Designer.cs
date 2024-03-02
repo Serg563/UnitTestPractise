@@ -12,8 +12,8 @@ using OrderApi.SignalR.Services.Data;
 namespace OrderApi.Migrations.SignalR
 {
     [DbContext(typeof(SignalRContext))]
-    [Migration("20240229081042_DeleteUsers")]
-    partial class DeleteUsers
+    [Migration("20240229194041_InitialChat")]
+    partial class InitialChat
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -226,6 +226,80 @@ namespace OrderApi.Migrations.SignalR
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.ChatEntities.GroupMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("JoinedDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GroupMembers");
+                });
+
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.ChatEntities.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MessageText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.ChatEntities.MessageGroup", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupId"));
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("GroupId");
+
+                    b.ToTable("MessageGroups");
+                });
+
             modelBuilder.Entity("OrderApi.SignalR.Services.Data.Connections", b =>
                 {
                     b.Property<string>("UserId")
@@ -239,7 +313,7 @@ namespace OrderApi.Migrations.SignalR
                     b.ToTable("Connections");
                 });
 
-            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Messages", b =>
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Notification", b =>
                 {
                     b.Property<int>("Key")
                         .ValueGeneratedOnAdd()
@@ -262,7 +336,7 @@ namespace OrderApi.Migrations.SignalR
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("OrderApi.SignalR.Services.Data.TestTimeEntity", b =>
@@ -297,21 +371,11 @@ namespace OrderApi.Migrations.SignalR
                         {
                             Id = 1,
                             Date = new DateTime(2024, 2, 29, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FullTime = new DateTime(2024, 2, 29, 10, 10, 41, 972, DateTimeKind.Local).AddTicks(5403),
+                            FullTime = new DateTime(2024, 2, 29, 21, 40, 41, 613, DateTimeKind.Local).AddTicks(4555),
                             Span = new TimeSpan(0, 2, 0, 0, 0),
                             Time = new TimeSpan(0, 10, 30, 0, 0),
-                            TimeOffSet = new DateTimeOffset(new DateTime(2024, 2, 29, 10, 10, 41, 972, DateTimeKind.Unspecified).AddTicks(5505), new TimeSpan(0, 2, 0, 0, 0))
+                            TimeOffSet = new DateTimeOffset(new DateTime(2024, 2, 29, 21, 40, 41, 613, DateTimeKind.Unspecified).AddTicks(4646), new TimeSpan(0, 2, 0, 0, 0))
                         });
-                });
-
-            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Users", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -365,10 +429,44 @@ namespace OrderApi.Migrations.SignalR
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.ChatEntities.GroupMember", b =>
+                {
+                    b.HasOne("OrderApi.SignalR.Services.Data.ChatEntities.MessageGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrderApi.Controllers.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.ChatEntities.Message", b =>
+                {
+                    b.HasOne("OrderApi.SignalR.Services.Data.ChatEntities.MessageGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId");
+
+                    b.HasOne("OrderApi.Controllers.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OrderApi.SignalR.Services.Data.Connections", b =>
                 {
-                    b.HasOne("OrderApi.SignalR.Services.Data.Users", "User")
-                        .WithMany("Connections")
+                    b.HasOne("OrderApi.Controllers.ApplicationUser", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -376,22 +474,15 @@ namespace OrderApi.Migrations.SignalR
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Messages", b =>
+            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Notification", b =>
                 {
-                    b.HasOne("OrderApi.SignalR.Services.Data.Users", "User")
-                        .WithMany("Messages")
+                    b.HasOne("OrderApi.Controllers.ApplicationUser", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OrderApi.SignalR.Services.Data.Users", b =>
-                {
-                    b.Navigation("Connections");
-
-                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

@@ -31,16 +31,16 @@ namespace OrderApi.SignalR.Services
                 //    user.Messages = new List<Messages>();
                 //}
                 //user.Messages.Add(new Messages {UserId = userId,Message = message });
-                var newMessage = new Messages() { UserId = userId, Message = message,Time = DateTime.Now};
-                await _dbContext.Messages.AddAsync(newMessage);
+                var newMessage = new Data.Notification() { UserId = userId, Message = message, Time = DateTime.Now};
+                await _dbContext.Notifications.AddAsync(newMessage);
                 await _dbContext.SaveChangesAsync();
                 generatedKey = newMessage.Key;
             }
             else
             {
                 await _dbContext.ApplicationUsers.AddAsync(new ApplicationUser() { Id = userId });
-                var newMessage = new Messages() { UserId = userId, Message = message , Time = DateTime.Now };
-                await _dbContext.Messages.AddAsync(newMessage);
+                var newMessage = new Data.Notification() { UserId = userId, Message = message , Time = DateTime.Now };
+                await _dbContext.Notifications.AddAsync(newMessage);
                 await _dbContext.SaveChangesAsync();
                 generatedKey = newMessage.Key;
             }
@@ -55,7 +55,7 @@ namespace OrderApi.SignalR.Services
             //{
             //    return messages;
             //}
-            var user = _dbContext.Messages.Where(x => x.UserId == userId);;
+            var user = _dbContext.Notifications.Where(x => x.UserId == userId);;
             if (user != null)
             {
                 return await user.Select(m => m.Message).ToListAsync();
@@ -63,16 +63,16 @@ namespace OrderApi.SignalR.Services
             return new List<string>();
 
         }
-        public async Task<List<Messages>> GetMessagesRefactored(string userId)
+        public async Task<List<Data.Notification>> GetMessagesRefactored(string userId)
         {
-            return await _dbContext.Messages.Where(x => x.UserId == userId).ToListAsync() ;
+            return await _dbContext.Notifications.Where(x => x.UserId == userId).ToListAsync() ;
         }
 
         public async Task RemoveMessage(string userId,int messageKey)
         {
-            var message = await _dbContext.Messages
+            var message = await _dbContext.Notifications
                 .FirstOrDefaultAsync(m => m.UserId == userId && m.Key == messageKey) ;
-            _dbContext.Messages.Remove(message);
+            _dbContext.Notifications.Remove(message);
             await _dbContext.SaveChangesAsync();
         }
         public async Task<List<string>> GetUsers()

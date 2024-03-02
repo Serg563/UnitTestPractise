@@ -11,12 +11,12 @@ namespace OrderApi.SignalR.Services.Data
         public Users()
         {
             Connections = new HashSet<Connections>();
-            Messages = new List<Messages>();
+            Messages = new List<Notification>();
         }
         [Key]
         public string UserId { get; set; }
 
         public virtual ICollection<Connections> Connections { get; set; }
-        public virtual ICollection<Messages> Messages { get; set; }
+        public virtual ICollection<Notification> Messages { get; set; }
     }
 }

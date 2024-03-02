@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderApi.SignalR;
 using System.Security.Claims;
@@ -11,6 +12,7 @@ using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using TaskManagerApi.Entities;
 
 namespace OrderApi.Controllers
 {
@@ -193,6 +195,13 @@ namespace OrderApi.Controllers
             }
         }
 
+        [HttpGet("GetAllUsers")]
+        public async Task<IEnumerable<ApplicationUser>> GetAllUsers()
+        {
+           var users = await _context.ApplicationUsers.Include(x => x.UserDetails).ToListAsync();
+           return users;
+        }
+             
     }
 
     public class ApiResponse
@@ -219,6 +228,7 @@ namespace OrderApi.Controllers
     public class ApplicationUser : IdentityUser
     {
         public string? Name { get; set; }
+        public UserDetails UserDetails { get; set; }
     }
     public class RegisterRequestDTO
     {

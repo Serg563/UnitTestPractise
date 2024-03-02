@@ -33,7 +33,7 @@ namespace OrderApi.SignalR
                 if (userId != Context.UserIdentifier)
                 {
                     var generatedKey = await _notificationRegistry.AddMessage(userId,message);
-                    var newMessage = new Messages() {Key = generatedKey, UserId = userId, Message = message,Time = DateTime.Now};
+                    var newMessage = new Services.Data.Notification() { Key = generatedKey, UserId = userId, Message = message, Time = DateTime.Now};
                     await Clients.User(userId).SendAsync("addNotification", newMessage);
                 }
             }

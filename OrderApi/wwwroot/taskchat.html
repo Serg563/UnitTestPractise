@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--<script src="signalr.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+<script>
+
+        var currentRoom = ""
+
+        let connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chat")
+        .build();
+        const connect = () => connection.start();
+        const auth = (u) => fetch('/auth?username=' + u)
+
+        const send = (message) => connection.send('SendMessage', { message, room: currentRoom })
+
+        const create = (room) => fetch('/create?room=' + room)
+
+        const list = () => fetch('/list').then(r => r.json()).then(r => console.log("rooms", r))
+
+        // const logMessage = (m) => console.log(m) // needed for working example
+
+    const creategroup = (name) => connection.send("CreateGroup", name);
+    const addusertogroup = (groupId) => connection.send("AddUserToGroup", groupId);
+    const sendmessagetogroup = (groupId, message) => connection.send("SendMessageToGroup", groupId, message);
+    const getmessages = (groupId) => connection.invoke("GetUserSpecificGroupMessagesAsync", groupId)
+        .then(x => console.log(x));
+    const senduser = (m,userId) => connection.send("SendMessageToUser",m,userId);
+    </script>
+</body>
+</html>
