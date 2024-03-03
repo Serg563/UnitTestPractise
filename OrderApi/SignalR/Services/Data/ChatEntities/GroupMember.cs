@@ -8,7 +8,7 @@ namespace OrderApi.SignalR.Services.Data.ChatEntities
     
     public class GroupMember
     {
-        [Key] // Add this attribute to specify the primary key
+        [Key]
         public int Id { get; set; }
 
         [ForeignKey("User")]

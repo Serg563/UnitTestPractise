@@ -3,6 +3,7 @@ using Microsoft.VisualBasic;
 using OrderApi.SignalR.Services.Data;
 using OrderApi.SignalR.Services.Data.ChatEntities;
 using System;
+using OrderApi.Controllers;
 
 namespace OrderApi.SignalR.Services
 {
@@ -14,7 +15,7 @@ namespace OrderApi.SignalR.Services
             _context = context;
         }
 
-        public async Task<int> CreateGroupAsync(string userId, string user2Id)
+        public async Task<int> CreateIndividualChatAsync(string userId, string user2Id)
         {
             //var group = await _context.MessageGroups.FirstOrDefaultAsync(x => x.GroupName == groupName);
 
@@ -61,21 +62,74 @@ namespace OrderApi.SignalR.Services
             return groupId;
         }
 
-        public async Task<IEnumerable<Message>> GetIndividualChatMessages(string userId, string user2Id)
+        public async Task CreateGroupAsync(string groupName,string creatorId)
         {
-            var groupIds = await _context.GroupMembers
-                .Where(gm => (gm.UserId == userId || gm.UserId == user2Id))
-                .GroupBy(gm => gm.GroupId)
-                .Where(grp => grp.Count() == 2)
-                .Select(grp => grp.Key)
-                .FirstOrDefaultAsync();
+            var existingGroup = await _context.MessageGroups.FirstOrDefaultAsync(m => m.GroupName == groupName);
 
-            var messages = await _context.Messages.Where(x => x.GroupId == groupIds).ToListAsync();
-                
+            if (existingGroup == null)
+            {
+                MessageGroup newGroup = new MessageGroup(){GroupName = groupName};
+                await _context.MessageGroups.AddAsync(newGroup);
+                await _context.SaveChangesAsync();
+            
+                var newGroupMember = new GroupMember()
+                {
+                    GroupId = newGroup.GroupId,
+                    UserId = creatorId,
+                    JoinedDateTime = DateTime.Now
+                };
+                await _context.GroupMembers.AddAsync(newGroupMember);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<IEnumerable<Message>> GetChatMessagesByGroupId(int groupId)
+        {
+            var messages = await _context.Messages.Where(x => x.GroupId == groupId).ToListAsync();
             return messages;
         }
-      
-        public async Task AddUserToGroupAsync(int groupId,string userId)
+
+        public async Task SendMessageToGroupAsync(int groupId, string senderId, string message)
+        {
+            var group = await _context.MessageGroups.FirstOrDefaultAsync(x => x.GroupId == groupId);
+
+            if (group == null)
+            {
+                return;
+            }
+
+            Message newMessage = new Message()
+            {
+                GroupId = groupId,
+                MessageText = message,
+                SentDateTime = DateTime.Now,
+                UserId = senderId
+            };
+            await _context.Messages.AddAsync(newMessage);
+            await _context.SaveChangesAsync();
+
+        }
+       
+        public async Task<List<Message>> GetChatMessages(int groupId)
+        {
+            var chatMessages = await _context.Messages
+                .Where(m => m.GroupId == groupId)
+                .ToListAsync();
+
+            return chatMessages;
+        }
+
+        public async Task<IEnumerable<ApplicationUser>> GetAllUsersFromChat(int groupId)
+        {
+            var res = await _context.GroupMembers
+                .Where(x => x.GroupId == groupId)
+                .Include(x => x.User)
+                .Select(x => x.User)
+                .ToListAsync();
+            return res;
+        }
+
+        public async Task AddUserToGroupAsync(int groupId, string userId)
         {
             var user = await _context.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == userId);
             if (user == null)
@@ -92,6 +146,54 @@ namespace OrderApi.SignalR.Services
             await _context.GroupMembers.AddAsync(member);
             await _context.SaveChangesAsync();
         }
+
+        public async Task LeaveGroupOrChatAsync(int groupId,string userId)
+        {
+            var groupMember = await _context.GroupMembers
+                .Where(x => x.UserId == userId && x.GroupId == groupId)
+                .FirstOrDefaultAsync();
+
+            _context.GroupMembers.Remove(groupMember);
+            await _context.SaveChangesAsync();
+
+            var memberCount = await _context.GroupMembers
+                .Where(x => x.GroupId == groupId)
+                .CountAsync();
+
+            if (memberCount == 0)
+            {
+                var group = await _context.MessageGroups.FirstOrDefaultAsync(x => x.GroupId == groupId);
+                _context.MessageGroups.Remove(group);
+                _context.SaveChangesAsync();
+
+            }
+        }
+
+        public async Task<IEnumerable<MessageGroup>> GetAllGroupsAsync()
+        {
+            return await _context.MessageGroups.ToListAsync();
+        }
+
+
+        //-------------------------------------------------------------------------------------------
+
+
+
+        public async Task<IEnumerable<Message>> GetIndividualChatMessages(string userId, string user2Id)
+        {
+            var groupIds = await _context.GroupMembers
+                .Where(gm => (gm.UserId == userId || gm.UserId == user2Id))
+                .GroupBy(gm => gm.GroupId)
+                .Where(grp => grp.Count() == 2)
+                .Select(grp => grp.Key)
+                .FirstOrDefaultAsync();
+
+            var messages = await _context.Messages.Where(x => x.GroupId == groupIds).ToListAsync();
+                
+            return messages;
+        }
+
+      
        
         public async Task<IEnumerable<Message>> GetGroupMessagesAsync(int groupId)
         {
@@ -121,25 +223,7 @@ namespace OrderApi.SignalR.Services
             return res;
         }
 
-        public async Task SendMessageToGroupAsync(int groupId, string message)
-        {
-            var group = await _context.MessageGroups.FirstOrDefaultAsync(x => x.GroupId == groupId);
-
-            if (group == null)
-            {
-                return;
-            }
-
-            Message newMessage = new Message()
-            {
-                GroupId = groupId,
-                MessageText = message,
-                SentDateTime = DateTime.Now,
-            };
-            await _context.Messages.AddAsync(newMessage);
-            await _context.SaveChangesAsync();
-
-        }
+      
 
         public async Task SendMessageToUserAsync(int groupId,string userId,string message)
         {
@@ -185,7 +269,7 @@ namespace OrderApi.SignalR.Services
             //await _context.SaveChangesAsync();
         }
 
-        public async Task<List<MessageGroup>> GetUserChats(string userId)
+        public async Task<List<MessageGroup>> GetUsersChatsWithMembersAndMessages(string userId)
         {
             var userGroups = await _context.GroupMembers
                 .Where(gm => gm.UserId == userId)
@@ -194,18 +278,14 @@ namespace OrderApi.SignalR.Services
 
             var userChats = await _context.MessageGroups
                 .Where(c => userGroups.Contains(c.GroupId))
+                .Include(x => x.GroupMembers)
+                    .ThenInclude(x => x.User)
+                    .ThenInclude(x => x.UserDetails)
+                .Include(x => x.Messages)
                 .ToListAsync();
 
             return userChats;
         }
 
-        public async Task<List<Message>> GetChatMessages(int groupId)
-        {
-            var chatMessages = await _context.Messages
-                .Where(m => m.GroupId == groupId)
-                .ToListAsync();
-
-            return chatMessages;
-        }
     }
 }

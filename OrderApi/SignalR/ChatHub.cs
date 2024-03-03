@@ -1,9 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using OrderApi.SignalR.Services;
+using OrderApi.SignalR.Services.Data;
 using OrderApi.SignalR.Services.Data.ChatEntities;
 
 namespace OrderApi.SignalR
@@ -37,27 +39,54 @@ namespace OrderApi.SignalR
             
         }
 
-        public async Task CreateGroup(string name)
+        public async Task CreateGroup(string groupName)
         {
-            await _chatService.CreateGroupAsync(name,Context.UserIdentifier);
+            await _chatService.CreateGroupAsync(groupName,Context.UserIdentifier);
+            Console.WriteLine("The group has been created");
         }
 
-        public async Task AddUserToGroup(int groupId)
+        public async Task GetChatMessages(int groupId)
         {
-            await _chatService.AddUserToGroupAsync(groupId,Context.UserIdentifier);
+            await base.OnConnectedAsync();
+            var messages = await _chatService.GetChatMessages(groupId);
+
+            
+            //await Clients.All.SendAsync("ReceiveMessage", messages);
+            foreach (var msg in messages)
+            {
+                await Clients.User(Context.UserIdentifier).SendAsync("ReceiveMessage", msg);
+            }
+            Console.WriteLine("On user Connected messages");
         }
 
-        public async Task SendMessageToGroup(int groupId,string message)
+        public async Task AddUserToGroup(int groupId,string userId)
         {
-            await _chatService.SendMessageToGroupAsync(groupId,message);
+            var users = await _chatService.GetAllUsersFromChat(groupId);
+            await _chatService.AddUserToGroupAsync(groupId, userId);
+            foreach (var user in users)
+            {
+                await Clients.User(user.Id).SendAsync("ReceiveMessage", $"User {userId} has joined room");
+            }
 
-            Console.WriteLine("SendMessageToGroup");
+            Console.WriteLine("User Joined Chat");
         }
 
-        public async Task SendMessageToUser(string message,string userId)
+        public async Task SendMessageToGroup(int groupId, string message)
         {
-            //await _chatService.SendMessageToUserAsync(Context.UserIdentifier,userId, message);
-            await Clients.User(userId).SendAsync("chatApp", message);
+            var users = await _chatService.GetAllUsersFromChat(groupId);
+            await _chatService.SendMessageToGroupAsync(groupId, Context.UserIdentifier, message);
+            Message newMessage = new Message()
+            {
+                GroupId = groupId,
+                MessageText = message,
+                SentDateTime = DateTime.Now,
+                UserId = Context.UserIdentifier
+            };
+            foreach (var user in users)
+            {
+                await Clients.User(user.Id).SendAsync("ReceiveMessage", newMessage);
+            }
+
             Console.WriteLine("SendMessageToUser");
         }
 
@@ -65,6 +94,19 @@ namespace OrderApi.SignalR
         {
             return await _chatService.GetUserSpecificGroupAsync(Context.UserIdentifier, groupId);
         }
+
+        public async Task LeaveGroup(int groupId, string userId)
+        {
+            await _chatService.LeaveGroupOrChatAsync(groupId, userId);
+            var users = await _chatService.GetAllUsersFromChat(groupId);
+            foreach (var user in users)
+            {
+                await Clients.User(user.Id).SendAsync("ReceiveMessage", $"User {userId} has leaved the group");
+            }
+
+            Console.WriteLine("User leaved group");
+        }
+
 
         public override async Task OnDisconnectedAsync(Exception ecp)
         {

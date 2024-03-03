@@ -10,28 +10,46 @@
 
 <script>
 
-        var currentRoom = ""
 
-        let connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chat")
-        .build();
-        const connect = () => connection.start();
-        const auth = (u) => fetch('/auth?username=' + u)
+        var connection = null
 
-        const send = (message) => connection.send('SendMessage', { message, room: currentRoom })
+        const connect = async () => {
+            if (connection != null && connection.state === 'Connected') {
+                await connection.stop()
+                connection = null;
+            }
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chat")
+                .build();
 
-        const create = (room) => fetch('/create?room=' + room)
+            connection.on('ReceiveMessage', (m) => console.log('chat message', m))
 
-        const list = () => fetch('/list').then(r => r.json()).then(r => console.log("rooms", r))
+            return connection.start()
+        }
+    
+
+        //const auth = (u) => fetch('/auth?username=' + u)
+
+        //const send = (message) => connection.send('SendMessage', { message, room: currentRoom })
+
+        //const create = (room) => fetch('/create?room=' + room)
+
+        //const list = () => fetch('/list').then(r => r.json()).then(r => console.log("rooms", r))
 
         // const logMessage = (m) => console.log(m) // needed for working example
 
-    const creategroup = (name) => connection.send("CreateGroup", name);
-    const addusertogroup = (groupId) => connection.send("AddUserToGroup", groupId);
-    const sendmessagetogroup = (groupId, message) => connection.send("SendMessageToGroup", groupId, message);
-    const getmessages = (groupId) => connection.invoke("GetUserSpecificGroupMessagesAsync", groupId)
-        .then(x => console.log(x));
-    const senduser = (m,userId) => connection.send("SendMessageToUser",m,userId);
+        //const creategroup = (name) => connection.send("CreateGroup", name);
+        //const addusertogroup = (groupId) => connection.send("AddUserToGroup", groupId);
+        //const sendmessagetogroup = (groupId, message) => connection.send("SendMessageToGroup", groupId, message);
+        //const getmessages = (groupId) => connection.invoke("GetUserSpecificGroupMessagesAsync", groupId)
+        //    .then(x => console.log(x));
+        //const senduser = (m, userId) => connection.send("SendMessageToUser", m, userId);
+
+        const sendmessagetouser = (groupId, message) => connection.send("SendMessageToGroup", groupId, message)
+        const addusertogroup = (groupId,userId) => connection.send("AddUserToGroup", groupId,userId);
+        const getchatmessages = (groupId) => connection.invoke("GetChatMessages", groupId).then(x => console.log(x));
+        const leavegroup = (groupId,userId) => connection.send("LeaveGroup",groupId,userId)
+
     </script>
 </body>
 </html>

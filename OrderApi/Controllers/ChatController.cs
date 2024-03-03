@@ -37,11 +37,33 @@ namespace OrderApi.Controllers
         {
             return await _chatService.GetIndividualChatMessages(userId,user2Id);
         }
-      
+
+        [HttpGet("GetChatMessagesByGroupId")]
+        public async Task<IEnumerable<Message>> GetChatMessagesByGroupId([FromQuery]int groupId)
+        {
+            return await _chatService.GetChatMessagesByGroupId(groupId);
+        }
+
+        [HttpPost("SendMessageToGroup")]
+        public async Task<IActionResult> SendMessageToGroup([FromBody] SendMessageRequest request)
+        {
+            await _chatService.SendMessageToGroupAsync(request.GroupId, request.SenderId, request.Message);
+            return Ok(); 
+        }
+
+
+
+        [HttpPost("CreateGroupAsync")]
+        public async Task<IActionResult> CreateGroupWithMultipleUsers([FromBody] CreateGroupModel createGroup)
+        {
+            await _chatService.CreateGroupAsync(createGroup.GroupName, createGroup.UserId);
+            return Ok();
+        }
+
         [HttpPost("CreateIndividualChat")]
         public async Task<IActionResult> CreateIndividualChat([FromQuery]string userId, [FromQuery]string user2Id)
         {
-             await _chatService.CreateGroupAsync(userId, user2Id);
+             await _chatService.CreateIndividualChatAsync(userId, user2Id);
              return Ok();
         }
 
@@ -59,15 +81,27 @@ namespace OrderApi.Controllers
             return Ok(messages);
         }
 
-        
+
+        [HttpGet("GetUsersChatsWithMembersAndMessages")]
+        public async Task<ActionResult<IEnumerable<Message>>> GetUsersChatsWithMembersAndMessages([FromQuery] string userId)
+        {
+            var messages = await _chatService.GetUsersChatsWithMembersAndMessages(userId);
+            return Ok(messages);
+        }
+
+        [HttpGet("GetAllGroups")]
+        public async Task<ActionResult<IEnumerable<Message>>> GetAllGroups()
+        {
+            var messages = await _chatService.GetAllGroupsAsync();
+            return Ok(messages);
+        }
 
 
 
 
 
 
-
-          [AllowAnonymous]
+        [AllowAnonymous]
         [HttpGet("/auth")]
         public IActionResult Authenticate(string username)
         {
@@ -97,4 +131,12 @@ namespace OrderApi.Controllers
             return Ok(_chatRegistry.GetRooms());
         }
     }
+    public class SendMessageRequest
+    {
+        public int GroupId { get; set; }
+        public string SenderId { get; set; }
+        public string Message { get; set; }
+    }
+
+    public record CreateGroupModel(string UserId, string GroupName);
 }
