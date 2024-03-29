@@ -45,6 +45,11 @@ namespace OrderApi.SignalR
             Console.WriteLine("The group has been created");
         }
 
+        public async Task CreateIndividualChat(string userId, string user2Id)
+        {
+            await _chatService.CreateIndividualChatAsync(userId, user2Id);
+        }
+
         public async Task GetChatMessages(int groupId)
         {
             await base.OnConnectedAsync();

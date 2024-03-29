@@ -31,9 +31,9 @@ namespace OrderApiTests
             context.Categories.AddRange(
                 new Category { CategoryID = 1, CategoryName = "Category 1", Description = "Description for Category 1" },
                 new Category { CategoryID = 2, CategoryName = "Category 2", Description = "Description for Category 2" });
-            context.Customers.AddRange(
-                new Customer { Id = 1, CompanyName = "Company A", ContactName = "John Doe", ContactTitle = "Manager" },
-                new Customer { Id = 2, CompanyName = "Company B", ContactName = "Jane Smith", ContactTitle = "CEO" });
+            //context.Customers.AddRange(
+            //    new Customer { Id = 1, CompanyName = "Company A", ContactName = "John Doe", ContactTitle = "Manager" },
+            //    new Customer { Id = 2, CompanyName = "Company B", ContactName = "Jane Smith", ContactTitle = "CEO" });
             context.Employees.AddRange(
                 new Employee { Id = 1, FirstName = "sergii", LastName = "niverchuk", BirthDate = new DateTime(1990, 5, 4), Title = "Jedi", Country = "Tatooine", City = "Mos Eisley" },
                 new Employee { Id = 2, FirstName = "illya", LastName = "zarech", BirthDate = new DateTime(1992, 7, 12), Title = "Princess", Country = "Alderaan", City = "Aldera" });
