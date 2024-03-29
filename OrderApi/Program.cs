@@ -1,3 +1,4 @@
+using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.SignalR;
@@ -15,8 +16,16 @@ using Microsoft.AspNetCore.DataProtection;
 using OrderApi.SignalR.Services;
 using OrderApi.SignalR.Services.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using OrderApi.Controllers;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Hosting;
+using OrderApi.CQRS.Data;
+using MediatR;
+using OrderApi.CQRS.Models;
+using OrderApi.CQRS.Resources.Commands;
+using OrderApi.CQRS.Resources.Queries;
+using OrderApi.Filters;
 
 public class Program
 {
@@ -25,6 +34,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+       
 
         builder.Services.AddSwaggerGen(c =>
         {
@@ -93,10 +103,10 @@ public class Program
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
         });
-        builder.Services.AddDbContext<SignalRContext>(options =>
-        {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("SignalRConnection"));
-        });
+        //builder.Services.AddDbContext<SignalRContext>(options =>
+        //{
+        //    options.UseSqlServer(builder.Configuration.GetConnectionString("SignalRConnection"));
+        //});
         builder.Services.AddScoped<IOrderRepository, OrderRepository>();
         builder.Services.AddScoped<IOrderService, OrderService>();
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -104,18 +114,18 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddSignalR();
+        //builder.Services.AddSignalR();
         //builder.Services.AddHostedService<MyBackgroundService>();
 
-        builder.Services.AddSingleton<ChatRegistry>();
-        builder.Services.AddScoped<OrderApi.SignalR.Services.NotificationRegistry>();
-        builder.Services.AddScoped(typeof(ConnectionMapping));
-        builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
-        builder.Services.AddSingleton<ShareDb>();
-        builder.Services.AddCors();
-        builder.Services.AddSingleton<INotificationSink, NotificationService>();
-        builder.Services.AddHostedService(sp => (NotificationService)sp.GetService<INotificationSink>());
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<SignalRContext>();
+        //builder.Services.AddSingleton<ChatRegistry>();
+        //builder.Services.AddScoped<OrderApi.SignalR.Services.NotificationRegistry>();
+        //builder.Services.AddScoped(typeof(ConnectionMapping));
+        //builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+        //builder.Services.AddSingleton<ShareDb>();
+        //builder.Services.AddCors();
+        //builder.Services.AddSingleton<INotificationSink, NotificationService>();
+        //builder.Services.AddHostedService(sp => (NotificationService)sp.GetService<INotificationSink>());
+        //builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<SignalRContext>();
         builder.Services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequireDigit = false;
@@ -125,11 +135,20 @@ public class Program
             options.Password.RequireNonAlphanumeric = false;
         });
         builder.Services.AddScoped<ApiResponse>();
-        builder.Services.AddScoped<ChatService>();
-      
+        //builder.Services.AddScoped<ChatService>();
+
+        //_____________________________________SQRS______________________________________
+
+        //builder.Services.AddSingleton<ProductContext>();
+        //builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+
+        builder.Services.AddScoped<ResourceFilter>();
+        builder.Services.AddScoped<CustomActionFilter>();
 
         var app = builder.Build();
 
+
+        //app.MapControllers();
         app.UseCors(options => options
             .WithOrigins("http://localhost:3000") // You can also specify a specific origin
             .AllowAnyMethod()
@@ -165,9 +184,9 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapHub<ChatHub>("/chat");
-        app.MapHub<ProtectedHub>("/protected");
-        app.MapHub<NotificationHub>("/notificationHub");
+        //app.MapHub<ChatHub>("/chat");
+        //app.MapHub<ProtectedHub>("/protected");
+        //app.MapHub<NotificationHub>("/notificationHub");
         
         app.Map("/token", ctx =>
         {
@@ -206,15 +225,58 @@ public class Program
 
             return Task.FromResult(1);
         });
-            //.RequireAuthorization("Cookie");
+        //.RequireAuthorization("Cookie");
         //app.Map("/cookie", ctx =>
         //{
         //    ctx.Response.StatusCode = 200;
         //    return ctx.Response.WriteAsync(ctx.User?.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value);
         //}).RequireAuthorization("Cookie");
 
-        app.MapControllers();
 
+        //_____________________________________CQRS______________________________________
+
+        //app.MapGet("/test", c =>
+        //{
+        //    Console.WriteLine("Test");
+        //    return Task.FromResult(0);
+        //});
+        //app.MapGet("/product/get-by-id/{id:int}", async (IMediator _mediator, int id) =>
+        //{
+        //    try
+        //    {
+        //        var command = new GetProductByIdQuery() { Id = id };
+        //        var response = await _mediator.Send(command);
+        //        return response is not null ? Results.Ok(response) : Results.NotFound();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Results.BadRequest(ex.Message);
+        //    }
+        //});
+
+        //app.MapPost("product/create", async (IMediator _mediator, Product product) =>
+        //{
+        //    try
+        //    {
+        //        var command = new CreateProductCommand()
+        //        {
+        //            Name = product.Name,
+        //            Description = product.Description,
+        //            Category = product.Category,
+        //            Price = product.Price,
+        //            Active = product.Active,
+        //        };
+        //        var response = await _mediator.Send(command);
+        //        return response is not null ? Results.Ok(response) : Results.NotFound();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Results.BadRequest(ex.Message);
+        //    }
+        //});
+
+
+        app.MapControllers();
         app.Run();
     }
     public class CustomCookie : AuthenticationHandler<AuthenticationSchemeOptions>

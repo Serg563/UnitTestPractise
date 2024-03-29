@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OrderApi.DTO;
 using OrderApi.Entities;
+using OrderApi.Filters;
 using OrderApi.Repositories;
 using System.Collections;
 
@@ -16,6 +17,8 @@ namespace OrderApi.Controllers
         {
             this.repo = repo;
         }
+        [ResourceFilter]
+        [CustomActionFilter]
         [HttpGet("GetAllOrders")]
         public async Task<IActionResult> GetOrders()
         {
